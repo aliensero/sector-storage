@@ -3,10 +3,11 @@ package sectorstorage
 import (
 	"context"
 	"errors"
-	"github.com/filecoin-project/sector-storage/fsutil"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/filecoin-project/sector-storage/fsutil"
 
 	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"
@@ -462,22 +463,22 @@ func (m *Manager) FinalizeSector(ctx context.Context, sector abi.SectorID, keepU
 	if os.Getenv("USE_MINIO") != "_yes_" {
 		fetchSel := newAllocSelector(ctx, m.index, stores.FTCache|stores.FTSealed, stores.PathStorage)
 
-	moveUnsealed := unsealed
-	{
-		if len(keepUnsealed) == 0 {
-			moveUnsealed = stores.FTNone
+		moveUnsealed := unsealed
+		{
+			if len(keepUnsealed) == 0 {
+				moveUnsealed = stores.FTNone
+			}
 		}
-	}
 
-	err = m.sched.Schedule(ctx, sector, sealtasks.TTFetch, fetchSel,
-		schedFetch(sector, stores.FTCache|stores.FTSealed|moveUnsealed, stores.PathStorage, stores.AcquireMove),
-		func(ctx context.Context, w Worker) error {
-			return w.MoveStorage(ctx, sector)
-		})
-	if err != nil {
-		return xerrors.Errorf("moving sector to storage: %w", err)
+		err = m.sched.Schedule(ctx, sector, sealtasks.TTFetch, fetchSel,
+			schedFetch(sector, stores.FTCache|stores.FTSealed|moveUnsealed, stores.PathStorage, stores.AcquireMove),
+			func(ctx context.Context, w Worker) error {
+				return w.MoveStorage(ctx, sector)
+			})
+		if err != nil {
+			return xerrors.Errorf("moving sector to storage: %w", err)
 
-	}
+		}
 	}
 	return nil
 }
@@ -539,6 +540,10 @@ func (m *Manager) FsStat(ctx context.Context, id stores.ID) (fsutil.FsStat, erro
 
 func (m *Manager) SchedDiag(ctx context.Context) (interface{}, error) {
 	return m.sched.Info(ctx)
+}
+
+func (m *Manager) RemoveReqQueBySector(ctx context.Context, num abi.SectorNumber) int {
+	return m.sched.RemoveReqQueBySector(num)
 }
 
 func (m *Manager) Close(ctx context.Context) error {
