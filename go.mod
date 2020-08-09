@@ -11,6 +11,7 @@ require (
 	github.com/filecoin-project/go-paramfetch v0.0.2-0.20200218225740-47c639bab663
 	github.com/filecoin-project/specs-actors v0.8.2
 	github.com/filecoin-project/specs-storage v0.1.1-0.20200622113353-88a9704877ea
+	github.com/go-ini/ini v1.57.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/go-multierror v1.0.0
@@ -30,6 +31,7 @@ require (
 	golang.org/x/tools v0.0.0-20200318150045-ba25ddc85566 // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
+	gopkg.in/ini.v1 v1.42.0 // indirect
 )
 
 replace github.com/filecoin-project/filecoin-ffi => ./extern/filecoin-ffi

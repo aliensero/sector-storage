@@ -218,7 +218,6 @@ type usedResources struct {
 	memUsedMax uint64
 	cpuUse     uint64
 	gpuUse     uint64
-
 }
 
 func (sh *scheduler) runSched() {
@@ -617,7 +616,6 @@ func (sh *scheduler) assignWorker(taskDone chan struct{}, wid WorkerID, w *worke
 	return nil
 }
 
-
 func getMinusCpu() uint64 {
 	var minusCpuNum int
 	var err error
@@ -776,4 +774,8 @@ func (sh *scheduler) Close(ctx context.Context) error {
 		return ctx.Err()
 	}
 	return nil
+}
+
+func (sh *scheduler) RemoveReqQueBySector(num abi.SectorNumber) int {
+	return sh.schedQueue.RemoveBySector(num)
 }

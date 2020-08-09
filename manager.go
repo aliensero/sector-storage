@@ -3,7 +3,6 @@ package sectorstorage
 import (
 	"context"
 	"errors"
-	"github.com/filecoin-project/sector-storage/fsutil"
 	"io"
 	"net/http"
 	"os"
@@ -516,6 +515,10 @@ func (m *Manager) FsStat(ctx context.Context, id stores.ID) (fsutil.FsStat, erro
 
 func (m *Manager) SchedDiag(ctx context.Context) (interface{}, error) {
 	return m.sched.Info(ctx)
+}
+
+func (m *Manager) RemoveReqQueBySector(ctx context.Context, num abi.SectorNumber) int {
+	return m.sched.RemoveReqQueBySector(num)
 }
 
 func (m *Manager) Close(ctx context.Context) error {

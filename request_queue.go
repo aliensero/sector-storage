@@ -1,6 +1,10 @@
 package sectorstorage
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/filecoin-project/specs-actors/actors/abi"
+)
 
 type requestQueue []*workerRequest
 
@@ -42,4 +46,17 @@ func (q *requestQueue) Remove(i int) *workerRequest {
 	*q = old[0 : n-1]
 	sort.Sort(q)
 	return item
+}
+
+func (q *requestQueue) RemoveBySector(num abi.SectorNumber) int {
+	log.Debugf("Before Del requestQueue len:%v\n", len(*q))
+	for i, it := range *q {
+		log.Debugf("requestQueue i %v,Numer %v\n", i, it.sector.Number)
+		if it.sector.Number == num {
+			item := q.Remove(i)
+			log.Debugf("Del requestQueue sector num %v\n", item.sector.Number)
+		}
+	}
+	log.Debugf("After Del requestQueue len:%v\n", len(*q))
+	return len(*q)
 }

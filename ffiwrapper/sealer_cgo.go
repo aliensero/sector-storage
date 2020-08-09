@@ -633,6 +633,7 @@ func ensureBucketExist(mc *minio.Client, bucket string) error {
 	return nil
 }
 
+
 func (sb *Sealer) ReleaseUnsealed(ctx context.Context, sector abi.SectorID, safeToFree []storage.Range) error {
 	// This call is meant to mark storage as 'freeable'. Given that unsealing is
 	// very expensive, we don't remove data as soon as we can - instead we only
