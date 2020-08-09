@@ -3,6 +3,7 @@ package sectorstorage
 import (
 	"context"
 	"errors"
+	"github.com/filecoin-project/sector-storage/fsutil"
 	"io"
 	"net/http"
 	"os"
