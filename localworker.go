@@ -67,7 +67,7 @@ func NewLocalWorker(wcfg WorkerConfig, store stores.Store, local *stores.Local, 
 		localStore: local,
 		sindex:     sindex,
 
-		acceptTasks: acceptTasks,
+		acceptTasks:    acceptTasks,
 		minerStorageId: stores.ID(minerStorageId),
 	}
 }
@@ -242,7 +242,6 @@ func (l *LocalWorker) FinalizeSector(ctx context.Context, sector abi.SectorID, k
 		return xerrors.Errorf("finalizing sector: %w", err)
 	}
 
-
 	if len(keepUnsealed) == 0 {
 		if err := l.storage.Remove(ctx, sector, stores.FTUnsealed, true); err != nil {
 			return xerrors.Errorf("removing unsealed data: %w", err)
@@ -329,6 +328,10 @@ func (l *LocalWorker) ReadPiece(ctx context.Context, writer io.Writer, sector ab
 
 func (l *LocalWorker) TaskTypes(context.Context) (map[sealtasks.TaskType]struct{}, error) {
 	return l.acceptTasks, nil
+}
+
+func (l *LocalWorker) CheckFsStat(ctx context.Context, task sealtasks.TaskType) bool {
+	return l.localStore.CheckFsStat(ctx, task)
 }
 
 func (l *LocalWorker) Paths(ctx context.Context) ([]stores.StoragePath, error) {

@@ -3,10 +3,11 @@ package sectorstorage
 import (
 	"context"
 	"errors"
-	"github.com/filecoin-project/sector-storage/fsutil"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/filecoin-project/sector-storage/fsutil"
 
 	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"
@@ -41,6 +42,8 @@ type Worker interface {
 
 	// Returns paths accessible to the worker
 	Paths(context.Context) ([]stores.StoragePath, error)
+
+	CheckFsStat(context.Context, sealtasks.TaskType) bool
 
 	Info(context.Context) (storiface.WorkerInfo, error)
 
@@ -356,7 +359,6 @@ func (m *Manager) SealPreCommit2(ctx context.Context, sector abi.SectorID, phase
 	}
 	disableAllowFetch := os.Getenv("DISABLE_PRE_COMMIT2_ALLOW_FETCH") == "_yes_"
 
-
 	selector := newExistingSelector(m.index, sector, stores.FTCache|stores.FTSealed, !disableAllowFetch)
 
 	err = m.sched.Schedule(ctx, sector, sealtasks.TTPreCommit2, selector, schedFetch(sector, stores.FTCache|stores.FTSealed, stores.PathSealing, mode), func(ctx context.Context, w Worker) error {
@@ -440,24 +442,24 @@ func (m *Manager) FinalizeSector(ctx context.Context, sector abi.SectorID, keepU
 		return err
 	}
 	if os.Getenv("USE_MINIO") != "_yes_" {
-	fetchSel := newAllocSelector(m.index, stores.FTCache|stores.FTSealed, stores.PathStorage)
+		fetchSel := newAllocSelector(m.index, stores.FTCache|stores.FTSealed, stores.PathStorage)
 
-	moveUnsealed := unsealed
-	{
-		if len(keepUnsealed) == 0 {
-			moveUnsealed = stores.FTNone
+		moveUnsealed := unsealed
+		{
+			if len(keepUnsealed) == 0 {
+				moveUnsealed = stores.FTNone
+			}
 		}
-	}
 
-	err = m.sched.Schedule(ctx, sector, sealtasks.TTFetch, fetchSel,
-		schedFetch(sector, stores.FTCache|stores.FTSealed|moveUnsealed, stores.PathStorage, stores.AcquireMove),
-		func(ctx context.Context, w Worker) error {
-			return w.MoveStorage(ctx, sector)
-		})
-	if err != nil {
-		return xerrors.Errorf("moving sector to storage: %w", err)
+		err = m.sched.Schedule(ctx, sector, sealtasks.TTFetch, fetchSel,
+			schedFetch(sector, stores.FTCache|stores.FTSealed|moveUnsealed, stores.PathStorage, stores.AcquireMove),
+			func(ctx context.Context, w Worker) error {
+				return w.MoveStorage(ctx, sector)
+			})
+		if err != nil {
+			return xerrors.Errorf("moving sector to storage: %w", err)
 
-	}
+		}
 	}
 	return nil
 }

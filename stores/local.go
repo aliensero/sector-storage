@@ -14,6 +14,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/filecoin-project/sector-storage/fsutil"
+	"github.com/filecoin-project/sector-storage/sealtasks"
 	"github.com/filecoin-project/specs-actors/actors/abi"
 )
 
@@ -586,6 +587,25 @@ func (st *Local) FsStat(ctx context.Context, id ID) (fsutil.FsStat, error) {
 	}
 
 	return p.stat(st.localStorage)
+}
+
+func (st *Local) CheckFsStat(ctx context.Context, task sealtasks.TaskType) bool {
+
+	for id, p := range st.paths {
+		sts, err := p.stat(st.localStorage)
+		if err != nil {
+			log.Warnf("CheckFsStat storageID: %v, error:%v\n", id, err)
+			continue
+		}
+		switch task {
+		case sealtasks.TTPreCommit2:
+			if sts.Available >= 536_870_912_000 {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 var _ Store = &Local{}

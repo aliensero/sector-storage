@@ -201,7 +201,6 @@ func (r *workerRequest) respond(err error) {
 	}
 }
 
-
 type SchedDiagRequestInfo struct {
 	Sector   abi.SectorID
 	TaskType sealtasks.TaskType
@@ -314,6 +313,11 @@ func (sh *scheduler) trySched() {
 			}
 
 			rpcCtx, cancel := context.WithTimeout(task.ctx, SelectorTimeout)
+
+			if !worker.w.CheckFsStat(rpcCtx, task.taskType) {
+				continue
+			}
+
 			ok, err := task.sel.Ok(rpcCtx, task.taskType, sh.spt, worker)
 			cancel()
 			if err != nil {
